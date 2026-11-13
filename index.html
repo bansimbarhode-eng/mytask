@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b1020">
+<title>MyTask</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #0b1020;
+  --card: #151c33;
+  --card-border: #232c4a;
+  --field: #1d2744;
+  --text: #f1f5f9;
+  --muted: #8b97b8;
+  --accent: #6366f1;
+  --accent2: #8b5cf6;
+  --green: #22c55e;
+  --orange: #f59e0b;
+  --red: #ef4444;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 24px 18px 40px;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 15% 0%, rgba(99,102,241,0.25), transparent 45%),
+    radial-gradient(circle at 100% 20%, rgba(139,92,246,0.18), transparent 40%),
+    var(--bg);
+}
+.container { max-width: 480px; margin: 0 auto; }
+svg { display: block; }
+.brand { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.logo {
+  width: 44px; height: 44px; border-radius: 13px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 20px rgba(99,102,241,0.4);
+}
+.logo svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.brand h1 { margin: 0; font-size: 26px; letter-spacing: -0.5px; }
+.subtitle { color: var(--muted); margin: 14px 0 0; font-size: 15px; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 22px;
+  margin-top: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+.card h2 { margin: 0 0 16px; font-size: 18px; letter-spacing: -0.2px; }
+input[type="text"], input[type="email"], input[type="password"] {
+  width: 100%;
+  padding: 15px 16px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--field);
+  color: var(--text);
+  font-size: 16px;
+  outline: none;
+  margin-bottom: 12px;
+}
+input::placeholder { color: #6b7799; }
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.25);
+}
+.pw { position: relative; margin-bottom: 12px; }
+.pw input { margin-bottom: 0; padding-right: 56px; }
+.eye {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 42px; height: 42px; border: none; border-radius: 10px;
+  background: transparent; color: var(--muted);
+  display: flex; align-items: center; justify-content: center; padding: 0;
+}
+.eye svg { width: 22px; height: 22px; }
+.btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(99,102,241,0.35);
+}
+.btn:active { transform: scale(0.98); }
+.btn.light { background: var(--field); box-shadow: none; margin-bottom: 6px; }
+.switch { text-align: center; color: #a5b4fc; margin: 18px 0 0; font-size: 15px; }
+.msg { color: #fbbf24; text-align: center; font-size: 14px; margin: 12px 0 0; min-height: 18px; }
+.topbar { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; flex-shrink: 0;
+}
+.who { flex: 1; min-width: 0; }
+.who small { color: var(--muted); display: block; font-size: 12px; }
+.who span { font-size: 14px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: var(--card); color: var(--muted);
+  display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0;
+}
+.icon-btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tabs {
+  display: flex; gap: 6px; margin-top: 20px; padding: 5px;
+  background: var(--card); border: 1px solid var(--card-border); border-radius: 14px;
+}
+.tab {
+  flex: 1; padding: 11px; border: none; border-radius: 10px;
+  background: transparent; color: var(--muted);
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.tab svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tab.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(99,102,241,0.35);
+}
+.progress-head { display: flex; justify-content: space-between; align-items: baseline; }
+.progress-head b { font-size: 28px; letter-spacing: -1px; }
+.progress-head span { color: var(--muted); font-size: 14px; }
+.bar { height: 10px; background: var(--field); border-radius: 99px; margin-top: 14px; overflow: hidden; }
+.bar div {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  border-radius: 99px; transition: width 0.4s ease;
+}
+  .add-row { display: flex; gap: 10px; }
+.add-row input { margin-bottom: 0; flex: 1; min-width: 0; }
+.add-btn {
+  width: 52px; border: none; border-radius: 12px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center; padding: 0;
+  box-shadow: 0 8px 18px rgba(99,102,241,0.35);
+}
+.add-btn svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+.task {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--field);
+  border-radius: 14px;
+  padding: 12px 12px 12px 14px;
+  margin-top: 10px;
+}
+.task span { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 16px; }
+.task.done span { text-decoration: line-through; color: var(--muted); }
+.task input[type="checkbox"] {
+  -webkit-appearance: none; appearance: none;
+  width: 26px; height: 26px; flex-shrink: 0;
+  border: 2px solid #4a5678; border-radius: 50%;
+  margin: 0; background: transparent;
+}
+.task input[type="checkbox"]:checked {
+  border-color: var(--green);
+  background: var(--green) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center/70% no-repeat;
+}
+.task .icon-btn { width: 36px; height: 36px; border: none; background: transparent; }
+.task .edit:active { color: #60a5fa; }
+.task .delete:active { color: var(--red); }
+.empty { text-align: center; color: var(--muted); padding: 22px 8px 8px; font-size: 15px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+.stat {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 16px; padding: 14px 10px; text-align: center;
+}
+.stat b { display: block; font-size: 20px; letter-spacing: -0.5px; overflow-wrap: anywhere; }
+.stat small { color: var(--muted); font-size: 12px; }
+.stat.alert b { color: var(--orange); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid2 input { margin-bottom: 0; }
+.field-gap { margin-bottom: 12px; }
+.product {
+  background: var(--field);
+  border-radius: 14px;
+  padding: 14px;
+  margin-top: 10px;
+}
+.p-top { display: flex; align-items: flex-start; gap: 10px; }
+.p-info { flex: 1; min-width: 0; }
+.p-name { font-size: 16px; font-weight: 700; overflow-wrap: anywhere; }
+.p-sub { color: var(--muted); font-size: 13px; margin-top: 3px; }
+.badge {
+  font-size: 11px; font-weight: 700; padding: 4px 9px;
+  border-radius: 99px; flex-shrink: 0; white-space: nowrap;
+}
+.badge.ok { background: rgba(34,197,94,0.15); color: var(--green); }
+.badge.low { background: rgba(245,158,11,0.15); color: var(--orange); }
+.badge.out { background: rgba(239,68,68,0.15); color: var(--red); }
+.p-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+.qty { display: flex; align-items: center; gap: 4px; }
+.qty button {
+  width: 40px; height: 40px; border: none; border-radius: 11px;
+  background: var(--card); color: var(--text);
+  display: flex; align-items: center; justify-content: center; padding: 0;
+}
+.qty button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; }
+.qty button:active { background: var(--accent); }
+.qty b { min-width: 48px; text-align: center; font-size: 20px; }
+.p-actions { display: flex; gap: 2px; }
+.p-actions .icon-btn { width: 38px; height: 38px; border: none; background: transparent; }
+.p-actions .edit:active { color: #60a5fa; }
+.p-actions .delete:active { color: var(--red); }
+.hist-toggle { width: 100%; display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid var(--card-border); border-radius: 14px; background: var(--field); color: var(--text); font-size: 16px; font-weight: 700; }
+.hist-toggle svg { width: 20px; height: 20px; }
+.hist-toggle span { flex: 1; text-align: left; }
+.hist-toggle .chev { display: flex; color: var(--muted); transition: transform 0.25s; }
+.hist-toggle .chev.open { transform: rotate(180deg); }
+.hist-toggle:active { background: var(--accent); }
+#historyList { margin-top: 12px; }
+
+/* ---- Interface sobre (clair, style Claude) ---- */
+:root {
+  --bg: #faf9f5; --card: #ffffff; --card-border: #e6e3d8; --field: #f4f2ea;
+  --text: #1f1e1d; --muted: #6f6d68; --accent: #c96442; --accent2: #c96442;
+  --green: #3d8b5a; --orange: #b7791f; --red: #c0392b;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #262624; --card: #30302e; --card-border: #3f3e3a; --field: #3a3936; --text: #f1efe8; --muted: #a09d94; }
+}
+body { background: var(--bg); padding: 20px 20px 110px; }
+.brand h1, .card h2 { font-family: Georgia, "Times New Roman", serif; font-weight: 500; }
+.brand h1 { font-size: 24px; }
+.logo { width: 34px; height: 34px; border-radius: 10px; background: var(--text); box-shadow: none; }
+.logo svg { width: 18px; height: 18px; stroke: var(--bg); }
+.subtitle { font-size: 14px; }
+.avatar { background: var(--text); color: var(--bg); }
+
+.card { background: transparent; border: none; border-radius: 0; box-shadow: none; padding: 0; margin-top: 30px; }
+.card h2 { font-size: 26px; margin-bottom: 14px; }
+#authView .card { background: var(--card); border: 1px solid var(--card-border); border-radius: 22px; padding: 22px; }
+
+input[type="text"], input[type="email"], input[type="password"] {
+  background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; padding: 15px 18px;
+}
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+  border-color: var(--muted); box-shadow: none;
+}
+input::placeholder { color: var(--muted); opacity: 0.7; }
+
+.btn { background: var(--text); color: var(--bg); border-radius: 999px; box-shadow: none; }
+.btn.light { background: var(--card); color: var(--text); border: 1px solid var(--card-border); }
+.add-btn { background: var(--text); border-radius: 999px; box-shadow: none; }
+.add-btn svg { stroke: var(--bg); }
+.switch { color: var(--accent); }
+.msg { color: var(--orange); }
+
+.tabs {
+  position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
+  width: calc(100% - 40px); max-width: 440px; margin: 0; z-index: 10;
+  background: var(--card); border: 1px solid var(--card-border); border-radius: 999px;
+  padding: 5px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+}
+.tab { border-radius: 999px; }
+.tab.active { background: var(--text); color: var(--bg); box-shadow: none; }
+
+.bar div { background: var(--accent); }
+.task, .product { background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; }
+.task input[type="checkbox"] { border-color: var(--muted); }
+.stat { background: var(--card); border-radius: 16px; }
+.qty button { background: var(--field); }
+.hist-toggle { background: var(--card); }
+.pw input { padding-right: 56px; text-overflow: ellipsis; }
+  /* ---- Tâches avancées et devoirs ---- */
+input[type="date"], select { width: 100%; padding: 14px 16px; border: 1px solid var(--card-border); border-radius: 16px; background: var(--card); color: var(--text); font-size: 16px; font-family: inherit; outline: none; }
+.hint { display: block; color: var(--muted); font-size: 13px; margin: 12px 0 0; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.row2 input, .row2 select { margin-bottom: 0; }
+.t-extra input[type="text"] { margin-top: 10px; margin-bottom: 0; }
+.t-tools { margin-top: 4px; }
+.t-tools input { margin-bottom: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.chip { width: auto; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--card-border); background: var(--card); color: var(--text); font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+.chip.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.t-body { flex: 1; min-width: 0; }
+.t-title { font-size: 16px; overflow-wrap: anywhere; }
+.task.done .t-title { text-decoration: line-through; color: var(--muted); }
+.t-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; align-items: center; }
+.tag { display: inline-block; font-size: 12px; font-style: normal; padding: 3px 9px; border-radius: 999px; background: var(--field); color: var(--muted); }
+.tag.late, .tag.haute, .tag.difficile { background: rgba(192,57,43,.12); color: var(--red); font-weight: 700; }
+.tag.today, .tag.moyen, .tag.moyenne { background: rgba(183,121,31,.15); color: var(--orange); font-weight: 700; }
+.tag.facile, .tag.basse { background: rgba(61,139,90,.15); color: var(--green); font-weight: 700; }
+.t-note { color: var(--muted); font-size: 13px; margin-top: 6px; overflow-wrap: anywhere; }
+.hw-help { margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="brand">
+  <div class="logo"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+  <h1>MyTask</h1>
+</div>
+<p class="subtitle">Organise tes journées simplement.</p>
+
+<div id="authView">
+  <div class="card">
+    <h2 id="authTitle">Connexion</h2>
+    <input id="email" type="email" placeholder="Ton email" autocomplete="email">
+    <div class="pw">
+      <input id="password" type="password" placeholder="Mot de passe (8 caractères minimum)" autocomplete="current-password">
+      <button type="button" class="eye" id="eyeBtn" onclick="togglePassword()"></button>
+    </div>
+    <button class="btn" id="authBtn" onclick="submitAuth()">Se connecter</button>
+    <p class="switch" id="switchText" onclick="toggleMode()">Pas de compte ? <u>Inscris-toi</u></p>
+    <p class="msg" id="authMsg"></p>
+  </div>
+</div>
+
+<div id="appView" style="display:none">
+  <div class="topbar">
+    <div class="avatar" id="avatar"></div>
+    <div class="who">
+      <small>Connecté</small>
+      <span id="userEmail"></span>
+    </div>
+    <button class="icon-btn" onclick="logout()" aria-label="Déconnexion" id="logoutBtn"></button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabTasks" onclick="showTab('tasks')"></button>
+    <button class="tab" id="tabStock" onclick="showTab('stock')"></button>
+  </div>
+
+  <div id="tasksView">
+    <div class="card">
+      <div class="progress-head">
+        <b id="percent">0%</b>
+        <span id="counter"></span>
+      </div>
+      <div class="bar"><div id="barFill"></div></div>
+    </div>
+
+    <div class="card">
+      <h2>Nouvelle tâche</h2>
+      <div class="add-row">
+        <input id="taskInput" type="text" placeholder="Que dois-tu faire ?">
+        <button class="add-btn" onclick="addTask()" aria-label="Ajouter">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Mes tâches</h2>
+      <div id="taskList"></div>
+    </div>
+  </div>
+
+  <div id="stockView" style="display:none">
+    <div class="stats">
+      <div class="stat"><b id="statCount">0</b><small>Produits</small></div>
+      <div class="stat"><b id="statValue">0</b><small>Valeur du stock</small></div>
+      <div class="stat" id="statAlertBox"><b id="statAlert">0</b><small>Alertes</small></div>
+    </div>
+
+    <div class="card">
+      <h2>Nouveau produit</h2>
+      <input id="pName" type="text" placeholder="Nom du produit">
+      <div class="grid2 field-gap">
+        <input id="pPrice" type="text" inputmode="decimal" placeholder="Prix">
+        <input id="pQty" type="text" inputmode="numeric" placeholder="Quantité">
+      </div>
+      <input id="pThreshold" type="text" inputmode="numeric" placeholder="Alerte stock faible à partir de (défaut : 5)">
+      <button class="btn" onclick="addProduct()">Ajouter au stock</button>
+    </div>
+
+    <div class="card">
+      <h2>Mon stock</h2>
+      <input id="searchInput" type="text" placeholder="Rechercher un produit..." oninput="displayStock()">
+      <button class="btn light" onclick="exportCSV()">Exporter en CSV</button>
+      <div id="productList"></div>
+    </div>
+
+    <div class="card">
+      <button class="hist-toggle" id="histBtn" onclick="toggleHistory()"></button>
+      <div id="historyList" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+const SUPABASE_URL = "https://zkjckegvadpvezalhceo.supabase.co";
+const SUPABASE_KEY = "sb_publishable_YZ6-fTd6BEdB_i2u0_3ROw_48KecN47";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const CURRENCY = "$";
+const DEFAULT_THRESHOLD = 5;
+
+const SVG_START = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+const EYE_OPEN = SVG_START + '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF = SVG_START + '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>';
+const ICON_EDIT = SVG_START + '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+const ICON_TRASH = SVG_START + '<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+const ICON_LOGOUT = SVG_START + '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>';
+const ICON_LIST = SVG_START + '<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+const ICON_BOX = SVG_START + '<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5"/><line x1="12" y1="13" x2="12" y2="21"/></svg>';
+const ICON_PLUS = SVG_START + '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+const ICON_MINUS = SVG_START + '<line x1="5" y1="12" x2="19" y2="12"/></svg>';
+const ICON_CLOCK = SVG_START + '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>';
+const ICON_CHEVRON = SVG_START + '<polyline points="6 9 12 15 18 9"/></svg>';
+
+document.getElementById("eyeBtn").innerHTML = EYE_OFF;
+document.getElementById("logoutBtn").innerHTML = ICON_LOGOUT;
+document.getElementById("tabTasks").innerHTML = ICON_LIST + "Tâches";
+document.getElementById("tabStock").innerHTML = ICON_BOX + "Stock";
+
+let mode = "login";
+let currentUser = null;
+let loadedUserId = null;
+let tasks = [];
+let products = [];
+let moves = [];
+let historyOpen = false;
+
+function showMsg(text) {
+  document.getElementById("authMsg").textContent = text;
+}
+
+function dbError(err) {
+  alert("Erreur base de données : " + err.message);
+}
+
+function togglePassword() {
+  const p = document.getElementById("password");
+  const b = document.getElementById("eyeBtn");
+  if (p.type === "password") {
+    p.type = "text";
+    b.innerHTML = EYE_OPEN;
+  } else {
+    p.type = "password";
+    b.innerHTML = EYE_OFF;
+  }
+}
+
+function toggleMode() {
+  mode = mode === "login" ? "signup" : "login";
+  document.getElementById("authTitle").textContent =
+    mode === "login" ? "Connexion" : "Inscription";
+  document.getElementById("authBtn").textContent =
+    mode === "login" ? "Se connecter" : "Créer mon compte";
+  document.getElementById("switchText").innerHTML =
+    mode === "login" ? "Pas de compte ? <u>Inscris-toi</u>" : "Déjà un compte ? <u>Connecte-toi</u>";
+  showMsg("");
+}
+
+async function submitAuth() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  showMsg("");
+
+  if (email === "" || password.length < 8) {
+    showMsg("Email et mot de passe (8 caractères minimum) obligatoires.");
+    return;
+  }
+
+  showMsg("Un instant...");
+  let result;
+  if (mode === "login") {
+    result = await sb.auth.signInWithPassword({ email: email, password: password });
+  } else {
+    result = await sb.auth.signUp({ email: email, password: password });
+  }
+
+  if (result.error) {
+    showMsg("Erreur : " + result.error.message);
+    return;
+  }
+
+  if (mode === "signup" && !result.data.session) {
+    showMsg("Compte créé ! Vérifie ton email pour confirmer, puis connecte-toi.");
+    return;
+  }
+  showMsg("");
+}
+
+async function logout() {
+  await sb.auth.signOut();
+}
+
+function showTab(name) {
+  const isTasks = name === "tasks";
+  document.getElementById("tasksView").style.display = isTasks ? "block" : "none";
+  document.getElementById("stockView").style.display = isTasks ? "none" : "block";
+  document.getElementById("tabTasks").className = "tab" + (isTasks ? " active" : "");
+  document.getElementById("tabStock").className = "tab" + (isTasks ? "" : " active");
+}
+
+function handleSession(session) {
+  if (session) {
+    currentUser = session.user;
+    document.getElementById("userEmail").textContent = currentUser.email;
+    document.getElementById("avatar").textContent =
+      currentUser.email.charAt(0).toUpperCase();
+    document.getElementById("authView").style.display = "none";
+    document.getElementById("appView").style.display = "block";
+    if (loadedUserId !== currentUser.id) {
+      loadedUserId = currentUser.id;
+      setTimeout(function() { loadAll(true); }, 0);
+    }
+  } else {
+    currentUser = null;
+    loadedUserId = null;
+    tasks = [];
+    products = [];
+    moves = [];
+    document.getElementById("authView").style.display = "block";
+    document.getElementById("appView").style.display = "none";
+  }
+}
+
+sb.auth.onAuthStateChange(function(event, session) {
+  handleSession(session);
+});
+
+sb.auth.getSession().then(function(res) {
+  handleSession(res.data.session);
+});
+
+async function loadAll(allowMigrate) {
+  const t = await sb.from("tasks").select("*").order("created_at", { ascending: true });
+  const p = await sb.from("products").select("*").order("created_at", { ascending: true });
+  if (t.error) { dbError(t.error); return; }
+  if (p.error) { dbError(p.error); return; }
+  tasks = t.data;
+  products = p.data.map(function(x) {
+    return { id: x.id, name: x.name, price: Number(x.price), qty: x.qty, threshold: x.threshold };
+  });
+  displayTasks();
+  displayStock();
+  loadMoves();
+  if (allowMigrate) migrateLocal();
+}
+
+async function migrateLocal() {
+  if (!currentUser) return;
+  const flag = "migrated_" + currentUser.id;
+  if (localStorage.getItem(flag)) return;
+  let lt = [];
+  let lp = [];
+  try {
+    lt = JSON.parse(localStorage.getItem("myTasks_" + currentUser.id) || "[]");
+    lp = JSON.parse(localStorage.getItem("myStock_" + currentUser.id) || "[]");
+  } catch (e) {}
+  let changed = false;
+  if (lt.length > 0 && tasks.length === 0) {
+    const r = await sb.from("tasks").insert(
+      lt.map(function(x) { return { text: x.text, done: !!x.done }; })
+    );
+    if (r.error) { dbError(r.error); return; }
+    changed = true;
+  }
+  if (lp.length > 0 && products.length === 0) {
+    const r = await sb.from("products").insert(
+      lp.map(function(x) {
+        return {
+          name: x.name,
+          price: x.price,
+          qty: x.qty,
+          threshold: x.threshold || DEFAULT_THRESHOLD
+        };
+      })
+    );
+    if (r.error) { dbError(r.error); return; }
+    changed = true;
+  }
+  localStorage.setItem(flag, "1");
+  if (changed) loadAll(false);
+}
+  /* ===================== STOCK ===================== */
+
+function toNumber(v) {
+  return parseFloat(String(v).replace(",", ".").replace(/\s/g, ""));
+}
+
+function formatMoney(n) {
+  return (Math.round(n * 100) / 100).toLocaleString("fr-FR") + " " + CURRENCY;
+}
+
+function stockState(p) {
+  if (p.qty <= 0) return "out";
+  if (p.qty <= p.threshold) return "low";
+  return "ok";
+}
+
+function readThreshold() {
+  const el = document.getElementById("pThreshold");
+  const n = parseInt(el.value, 10);
+  el.value = "";
+  return isNaN(n) || n < 0 ? DEFAULT_THRESHOLD : n;
+}
+
+async function logMove(p, diff) {
+  if (!diff) return;
+  const r = await sb.from("stock_moves").insert({
+    product_id: p.id,
+    product_name: p.name,
+    change: diff,
+    qty_after: p.qty
+  });
+  if (r.error) { dbError(r.error); return; }
+  loadMoves();
+}
+
+async function loadMoves() {
+  const r = await sb.from("stock_moves").select("*")
+    .order("created_at", { ascending: false }).limit(1000);
+  if (r.error) { dbError(r.error); return; }
+  moves = r.data;
+  renderHistory();
+}
+
+/* ----- Historique : bouton + une carte par produit ----- */
+
+function updateHistBtn() {
+  const btn = document.getElementById("histBtn");
+  btn.innerHTML = ICON_CLOCK + "<span>" + (historyOpen ? "Masquer l'historique" : "Voir l'historique") + "</span>" + '<i class="chev' + (historyOpen ? " open" : "") + '">' + ICON_CHEVRON + "</i>";
+}
+
+function toggleHistory() {
+  historyOpen = !historyOpen;
+  document.getElementById("historyList").style.display = historyOpen ? "block" : "none";
+  updateHistBtn();
+}
+
+updateHistBtn();
+
+function renderHistory() {
+  const list = document.getElementById("historyList");
+  list.innerHTML = "";
+  if (moves.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "Aucun mouvement pour le moment.";
+    list.appendChild(empty);
+    return;
+  }
+
+  const groups = {};
+  const order = [];
+  moves.forEach(function(m) {
+    const key = m.product_id != null ? "id" + m.product_id : "n" + m.product_name;
+    if (!groups[key]) {
+      groups[key] = { id: m.product_id, name: m.product_name, plus: 0, minus: 0, last: m.created_at, lastQty: m.qty_after };
+      order.push(key);
+    }
+    const g = groups[key];
+    if (m.change > 0) g.plus += m.change; else g.minus += Math.abs(m.change);
+  });
+
+  function box(label, value, color) {
+    const b = document.createElement("div");
+    b.style.cssText = "flex:1;background:var(--card);border-radius:10px;padding:10px 4px;text-align:center;";
+    const s = document.createElement("div");
+    s.style.cssText = "color:var(--muted);font-size:12px;margin-bottom:4px;";
+    s.textContent = label;
+    const v = document.createElement("div");
+    v.style.cssText = "font-size:22px;font-weight:700;color:" + color + ";";
+    v.textContent = value;
+    b.appendChild(s);
+    b.appendChild(v);
+    return b;
+  }
+
+  order.forEach(function(key) {
+    const g = groups[key];
+    const prod = products.find(function(p) { return p.id === g.id; });
+    const remaining = prod ? prod.qty : g.lastQty;
+
+    const card = document.createElement("div");
+    card.style.cssText = "background:var(--field);border-radius:14px;padding:14px;margin-top:10px;";
+
+    const name = document.createElement("div");
+    name.style.cssText = "font-size:17px;font-weight:700;overflow-wrap:anywhere;";
+    name.textContent = g.name;
+
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;gap:8px;margin-top:10px;";
+    row.appendChild(box("Ajouté", "+" + g.plus, "var(--green)"));
+    row.appendChild(box("Retiré", "-" + g.minus, "var(--red)"));
+    row.appendChild(box("Reste en stock", remaining, "var(--text)"));
+
+    const last = document.createElement("div");
+    last.style.cssText = "color:var(--muted);font-size:12px;margin-top:8px;";
+    last.textContent = "Dernière activité : " +
+      new Date(g.last).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+
+    card.appendChild(name);
+    card.appendChild(row);
+    card.appendChild(last);
+    list.appendChild(card);
+  });
+  }
+  function exportCSV() {
+  if (products.length === 0) {
+    alert("Ton stock est vide.");
+    return;
+  }
+  const rows = [["Produit", "Prix", "Quantité", "Valeur", "Seuil d'alerte", "État"]];
+  products.forEach(function(p) {
+    const st = stockState(p);
+    rows.push([
+      p.name, p.price, p.qty, p.price * p.qty, p.threshold,
+      st === "out" ? "En rupture" : st === "low" ? "Stock faible" : "En stock"
+    ]);
+  });
+  const csv = rows.map(function(r) {
+    return r.map(function(c) {
+      return '"' + String(c).replace(/"/g, '""') + '"';
+    }).join(";");
+  }).join("\n");
+  const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "stock-mytask.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}
+
+async function changeQty(p, newQty) {
+  if (newQty < 0) return;
+  const r = await sb.from("products").update({ qty: newQty }).eq("id", p.id);
+  if (r.error) { dbError(r.error); return; }
+  const diff = newQty - p.qty;
+  p.qty = newQty;
+  displayStock();
+  logMove(p, diff);
+}
+
+function displayStock() {
+  const list = document.getElementById("productList");
+  list.innerHTML = "";
+
+  if (products.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "Aucun produit pour le moment. Ajoute ton premier produit ci-dessus.";
+    list.appendChild(empty);
+  }
+
+  const q = (document.getElementById("searchInput").value || "").trim().toLowerCase();
+  const visible = products.filter(function(p) { return p.name.toLowerCase().indexOf(q) !== -1; });
+  if (products.length > 0 && visible.length === 0) {
+    const none = document.createElement("div");
+    none.className = "empty";
+    none.textContent = "Aucun produit ne correspond à ta recherche.";
+    list.appendChild(none);
+  }
+
+  products.forEach(function(p, index) {
+    if (p.name.toLowerCase().indexOf(q) === -1) return;
+    const state = stockState(p);
+
+    const box = document.createElement("div");
+    box.className = "product";
+
+    const top = document.createElement("div");
+    top.className = "p-top";
+
+    const info = document.createElement("div");
+    info.className = "p-info";
+    const name = document.createElement("div");
+    name.className = "p-name";
+    name.textContent = p.name;
+    const sub = document.createElement("div");
+    sub.className = "p-sub";
+    sub.textContent = formatMoney(p.price) + " / unité · alerte à " + p.threshold;
+    info.appendChild(name);
+    info.appendChild(sub);
+
+    const badge = document.createElement("span");
+    badge.className = "badge " + state;
+    badge.textContent =
+      state === "out" ? "En rupture" : state === "low" ? "Stock faible" : "En stock";
+
+    top.appendChild(info);
+    top.appendChild(badge);
+
+    const bottom = document.createElement("div");
+    bottom.className = "p-bottom";
+
+    const qty = document.createElement("div");
+    qty.className = "qty";
+
+    const minus = document.createElement("button");
+    minus.setAttribute("aria-label", "Retirer 1");
+    minus.innerHTML = ICON_MINUS;
+    minus.onclick = function() { changeQty(p, p.qty - 1); };
+
+    const qtyText = document.createElement("b");
+    qtyText.textContent = p.qty;
+
+    const plus = document.createElement("button");
+    plus.setAttribute("aria-label", "Ajouter 1");
+    plus.innerHTML = ICON_PLUS;
+    plus.onclick = function() { changeQty(p, p.qty + 1); };
+
+    qty.appendChild(minus);
+    qty.appendChild(qtyText);
+    qty.appendChild(plus);
+
+    const actions = document.createElement("div");
+    actions.className = "p-actions";
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "icon-btn edit";
+    editBtn.setAttribute("aria-label", "Modifier");
+    editBtn.innerHTML = ICON_EDIT;
+    editBtn.onclick = async function() {
+      const newName = prompt("Nom du produit :", p.name);
+      if (newName === null) return;
+      const newPrice = prompt("Prix unitaire :", p.price);
+      if (newPrice === null) return;
+      const newThreshold = prompt("Alerte stock faible à partir de (quantité) :", p.threshold);
+      if (newThreshold === null) return;
+
+      const price = toNumber(newPrice);
+      const threshold = parseInt(newThreshold, 10);
+      if (newName.trim() === "" || isNaN(price) || price < 0 || isNaN(threshold) || threshold < 0) {
+        alert("Valeurs invalides. Aucune modification enregistrée.");
+        return;
+      }
+      const r = await sb.from("products")
+        .update({ name: newName.trim(), price: price, threshold: threshold })
+        .eq("id", p.id);
+      if (r.error) { dbError(r.error); return; }
+      p.name = newName.trim();
+      p.price = price;
+      p.threshold = threshold;
+      displayStock();
+    };
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "icon-btn delete";
+    delBtn.setAttribute("aria-label", "Supprimer");
+    delBtn.innerHTML = ICON_TRASH;
+    delBtn.onclick = async function() {
+      if (confirm("Supprimer « " + p.name + " » du stock ?")) {
+        const r = await sb.from("products").delete().eq("id", p.id);
+        if (r.error) { dbError(r.error); return; }
+        products.splice(index, 1);
+        displayStock();
+      }
+    };
+
+    actions.appendChild(editBtn);
+    actions.appendChild(delBtn);
+
+    bottom.appendChild(qty);
+    bottom.appendChild(actions);
+
+    box.appendChild(top);
+    box.appendChild(bottom);
+    list.appendChild(box);
+  });
+
+  const count = products.length;
+  const value = products.reduce(function(sum, p) { return sum + p.price * p.qty; }, 0);
+  const alerts = products.filter(function(p) { return stockState(p) !== "ok"; }).length;
+
+  document.getElementById("statCount").textContent = count;
+  document.getElementById("statValue").textContent = formatMoney(value);
+  document.getElementById("statAlert").textContent = alerts;
+  document.getElementById("statAlertBox").className = "stat" + (alerts > 0 ? " alert" : "");
+}
+
+async function addProduct() {
+  const nameInput = document.getElementById("pName");
+  const priceInput = document.getElementById("pPrice");
+  const qtyInput = document.getElementById("pQty");
+
+  const name = nameInput.value.trim();
+  const price = toNumber(priceInput.value);
+  const qty = qtyInput.value.trim() === "" ? 0 : parseInt(qtyInput.value, 10);
+
+  if (name === "") {
+    alert("Écris le nom du produit !");
+    return;
+  }
+  if (isNaN(price) || price < 0) {
+    alert("Écris un prix valide (exemple : 12.50).");
+    return;
+  }
+  if (isNaN(qty) || qty < 0) {
+    alert("Écris une quantité valide (exemple : 20).");
+    return;
+  }
+
+  const threshold = readThreshold();
+  const r = await sb.from("products")
+    .insert({ name: name, price: price, qty: qty, threshold: threshold })
+    .select().single();
+  if (r.error) { dbError(r.error); return; }
+  const np = {
+    id: r.data.id,
+    name: r.data.name,
+    price: Number(r.data.price),
+    qty: r.data.qty,
+    threshold: r.data.threshold
+  };
+  products.push(np);
+  nameInput.value = "";
+  priceInput.value = "";
+  qtyInput.value = "";
+  displayStock();
+  if (np.qty > 0) logMove(np, np.qty);
+}
+
+/* ===================== Touche Entrée ===================== */
+
+document.getElementById("taskInput").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") addTask();
+});
+document.getElementById("password").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") submitAuth();
+});
+document.getElementById("pName").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") document.getElementById("pPrice").focus();
+});
+document.getElementById("pThreshold").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") addProduct();
+});
+  /* ===== Tâches avancées + Devoirs ===== */
+const GRADES = ["Maternelle", "CP", "CE1", "CE2", "CM1", "CM2", "6e", "5e", "4e", "3e", "2nde", "1ère", "Terminale"];
+const DIFFS = { facile: 1, moyen: 2, difficile: 3 };
+const PRIO = { haute: 1, moyenne: 2, basse: 3 };
+let taskFilter = "all";
+let taskSearch = "";
+let children = [];
+let homework = [];
+let currentChild = null;
+let childBarEl, hwFormEl, hwListEl, childDelEl, hwHintEl;
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined && text !== null) e.textContent = text;
+  return e;
+}
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+function fmtDate(d) {
+  const p = d.split("-");
+  return p[2] + "/" + p[1];
+}
+
+function dueTag(d, done) {
+  if (!d) return null;
+  const t = todayStr();
+  if (!done && d < t) return el("small", "tag late", "En retard · " + fmtDate(d));
+  if (!done && d === t) return el("small", "tag today", "Aujourd'hui");
+  return el("small", "tag", fmtDate(d));
+}
+
+function buildAdvancedUI() {
+  const addRow = document.querySelector("#tasksView .add-row");
+  const extra = el("div", "t-extra");
+  extra.appendChild(el("small", "hint", "Date limite et priorité (facultatif)"));
+  const row = el("div", "row2");
+  const due = el("input");
+  due.type = "date";
+  due.id = "tDue";
+  const prio = el("select");
+  prio.id = "tPrio";
+  [["moyenne", "Priorité moyenne"], ["haute", "Priorité haute"], ["basse", "Priorité basse"]].forEach(function(o) {
+    const op = el("option", null, o[1]);
+    op.value = o[0];
+    prio.appendChild(op);
+  });
+  row.appendChild(due);
+  row.appendChild(prio);
+  const cat = el("input");
+  cat.type = "text";
+  cat.id = "tCat";
+  cat.placeholder = "Catégorie (Travail, Maison...)";
+  const notes = el("input");
+  notes.type = "text";
+  notes.id = "tNotes";
+  notes.placeholder = "Note (facultatif)";
+  extra.appendChild(row);
+  extra.appendChild(cat);
+  extra.appendChild(notes);
+  addRow.parentNode.appendChild(extra);
+
+  const taskList = document.getElementById("taskList");
+  const bar = el("div", "t-tools");
+  const search = el("input");
+  search.type = "text";
+  search.placeholder = "Rechercher une tâche...";
+  search.oninput = function() { taskSearch = search.value; displayTasks(); };
+  const chips = el("div", "chips");
+  [["all", "Toutes"], ["todo", "À faire"], ["done", "Terminées"], ["today", "Aujourd'hui"]].forEach(function(f) {
+    const b = el("button", "chip" + (f[0] === "all" ? " active" : ""), f[1]);
+    b.type = "button";
+    b.onclick = function() {
+      taskFilter = f[0];
+      Array.prototype.forEach.call(chips.children, function(c) { c.classList.remove("active"); });
+      b.classList.add("active");
+      displayTasks();
+    };
+    chips.appendChild(b);
+  });
+  bar.appendChild(search);
+  bar.appendChild(chips);
+  taskList.parentNode.insertBefore(bar, taskList);
+
+  const hw = el("div", "card");
+  hw.appendChild(el("h2", null, "Devoirs des enfants"));
+  hw.appendChild(el("small", "hint", "Ajoute chaque enfant avec sa classe. Prénom seulement, sans nom de famille."));
+
+  const addChildRow = el("div", "row2");
+  const cName = el("input");
+  cName.type = "text";
+  cName.id = "cName";
+  cName.placeholder = "Prénom";
+  const cGrade = el("select");
+  cGrade.id = "cGrade";
+  GRADES.forEach(function(g) {
+    const op = el("option", null, g);
+    op.value = g;
+    cGrade.appendChild(op);
+  });
+  addChildRow.appendChild(cName);
+  addChildRow.appendChild(cGrade);
+  hw.appendChild(addChildRow);
+  const addChildBtn = el("button", "btn light", "Ajouter l'enfant");
+  addChildBtn.style.marginTop = "10px";
+  addChildBtn.onclick = addChild;
+  hw.appendChild(addChildBtn);
+
+  childBarEl = el("div", "chips");
+  hw.appendChild(childBarEl);
+  childDelEl = el("button", "chip", "Supprimer cet enfant");
+  childDelEl.type = "button";
+  childDelEl.onclick = deleteChild;
+  hw.appendChild(childDelEl);
+  hwHintEl = el("small", "hint", "");
+  hw.appendChild(hwHintEl);
+
+  hwFormEl = el("div", "t-extra");
+  const hSubject = el("input");
+  hSubject.type = "text";
+  hSubject.id = "hSubject";
+  hSubject.placeholder = "Matière (Maths, Français...)";
+  const hTitle = el("input");
+  hTitle.type = "text";
+  hTitle.id = "hTitle";
+  hTitle.placeholder = "Devoir à faire";
+  const hRow = el("div", "row2");
+  const hDiff = el("select");
+  hDiff.id = "hDiff";
+  [["facile", "Facile"], ["moyen", "Moyen"], ["difficile", "Difficile"]].forEach(function(o) {
+    const op = el("option", null, o[1]);
+    op.value = o[0];
+    if (o[0] === "moyen") op.selected = true;
+    hDiff.appendChild(op);
+  });
+  const hDue = el("input");
+  hDue.type = "date";
+  hDue.id = "hDue";
+  hRow.appendChild(hDiff);
+  hRow.appendChild(hDue);
+  const hBtn = el("button", "btn", "Ajouter le devoir");
+  hBtn.style.marginTop = "10px";
+  hBtn.onclick = addHomework;
+  hwFormEl.appendChild(hSubject);
+  hwFormEl.appendChild(hTitle);
+  hwFormEl.appendChild(el("small", "hint", "Difficulté, puis date limite (touche la case de droite)"));
+  hwFormEl.appendChild(hRow);
+  hwFormEl.appendChild(hBtn);
+  hw.appendChild(hwFormEl);
+
+  hwListEl = el("div");
+  hw.appendChild(hwListEl);
+  document.getElementById("tasksView").appendChild(hw);
+  renderHomework();
+}
+
+function displayTasks() {
+  const list = document.getElementById("taskList");
+  list.innerHTML = "";
+  const t = todayStr();
+  const q = taskSearch.trim().toLowerCase();
+
+  const shown = tasks.filter(function(x) {
+    if (taskFilter === "todo" && x.done) return false;
+    if (taskFilter === "done" && !x.done) return false;
+    if (taskFilter === "today" && !(x.due_date && x.due_date <= t && !x.done)) return false;
+    if (q && (x.text + " " + (x.category || "") + " " + (x.notes || "")).toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+  shown.sort(function(a, b) {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    const da = a.due_date || "9999-99-99";
+    const db = b.due_date || "9999-99-99";
+    if (da !== db) return da < db ? -1 : 1;
+    return (PRIO[a.priority] || 2) - (PRIO[b.priority] || 2);
+  });
+
+  if (tasks.length === 0) {
+    list.appendChild(el("div", "empty", "Aucune tâche pour le moment. Ajoute ta première tâche ci-dessus."));
+  } else if (shown.length === 0) {
+    list.appendChild(el("div", "empty", "Aucune tâche ne correspond."));
+  }
+
+  shown.forEach(function(task) {
+    const div = el("div", "task" + (task.done ? " done" : ""));
+
+    const check = document.createElement("input");
+    check.type = "checkbox";
+    check.checked = task.done;
+    check.onchange = async function() {
+      const r = await sb.from("tasks").update({ done: check.checked }).eq("id", task.id);
+      if (r.error) { dbError(r.error); check.checked = task.done; return; }
+      task.done = check.checked;
+      displayTasks();
+    };
+
+    const body = el("div", "t-body");
+    body.appendChild(el("div", "t-title", task.text));
+    const meta = el("div", "t-meta");
+    if (task.priority && task.priority !== "moyenne") {
+      meta.appendChild(el("small", "tag " + task.priority, task.priority === "haute" ? "Priorité haute" : "Priorité basse"));
+    }
+    if (task.category) meta.appendChild(el("small", "tag", task.category));
+    const dt = dueTag(task.due_date, task.done);
+    if (dt) meta.appendChild(dt);
+    if (meta.children.length > 0) body.appendChild(meta);
+    if (task.notes) body.appendChild(el("div", "t-note", task.notes));
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "icon-btn edit";
+    editBtn.setAttribute("aria-label", "Modifier");
+    editBtn.innerHTML = ICON_EDIT;
+    editBtn.onclick = async function() {
+      const newText = prompt("Modifier la tâche :", task.text);
+      if (newText === null || newText.trim() === "") return;
+      const newNotes = prompt("Note (laisse vide pour aucune) :", task.notes || "");
+      const upd = { text: newText.trim() };
+      if (newNotes !== null) upd.notes = newNotes.trim() === "" ? null : newNotes.trim();
+      const r = await sb.from("tasks").update(upd).eq("id", task.id);
+      if (r.error) { dbError(r.error); return; }
+      task.text = upd.text;
+      if ("notes" in upd) task.notes = upd.notes;
+      displayTasks();
+    };
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "icon-btn delete";
+    delBtn.setAttribute("aria-label", "Supprimer");
+    delBtn.innerHTML = ICON_TRASH;
+    delBtn.onclick = async function() {
+      const r = await sb.from("tasks").delete().eq("id", task.id);
+      if (r.error) { dbError(r.error); return; }
+      tasks = tasks.filter(function(x) { return x.id !== task.id; });
+      displayTasks();
+    };
+
+    div.appendChild(check);
+    div.appendChild(body);
+    div.appendChild(editBtn);
+    div.appendChild(delBtn);
+    list.appendChild(div);
+  });
+
+  const total = tasks.length;
+  const doneCount = tasks.filter(function(x) { return x.done; }).length;
+  const pct = total === 0 ? 0 : Math.round((doneCount / total) * 100);
+  document.getElementById("percent").textContent = pct + "%";
+  document.getElementById("counter").textContent = doneCount + " terminée(s) sur " + total;
+  document.getElementById("barFill").style.width = pct + "%";
+}
+
+async function addTask() {
+  const input = document.getElementById("taskInput");
+  const value = input.value.trim();
+  if (value === "") {
+    alert("Écris une tâche !");
+    return;
+  }
+  const row = { text: value, priority: document.getElementById("tPrio").value };
+  const due = document.getElementById("tDue").value;
+  const cat = document.getElementById("tCat").value.trim();
+  const notes = document.getElementById("tNotes").value.trim();
+  if (due) row.due_date = due;
+  if (cat) row.category = cat;
+  if (notes) row.notes = notes;
+  const r = await sb.from("tasks").insert(row).select().single();
+  if (r.error) { dbError(r.error); return; }
+  tasks.push(r.data);
+  input.value = "";
+  document.getElementById("tDue").value = "";
+  document.getElementById("tCat").value = "";
+  document.getElementById("tNotes").value = "";
+  document.getElementById("tPrio").value = "moyenne";
+  displayTasks();
+  }
+  async function loadHomeworkData() {
+  const c = await sb.from("children").select("*").order("grade_rank", { ascending: true });
+  const h = await sb.from("homework").select("*").order("created_at", { ascending: true });
+  if (c.error) { dbError(c.error); return; }
+  if (h.error) { dbError(h.error); return; }
+  children = c.data;
+  homework = h.data;
+  if (currentChild !== null && !children.some(function(x) { return x.id === currentChild; })) currentChild = null;
+  renderHomework();
+}
+
+async function addChild() {
+  const name = document.getElementById("cName").value.trim();
+  const grade = document.getElementById("cGrade").value;
+  if (name === "") { alert("Écris le prénom de l'enfant."); return; }
+  const r = await sb.from("children").insert({ name: name, grade: grade, grade_rank: GRADES.indexOf(grade) }).select().single();
+  if (r.error) { dbError(r.error); return; }
+  children.push(r.data);
+  children.sort(function(a, b) { return a.grade_rank - b.grade_rank; });
+  currentChild = r.data.id;
+  document.getElementById("cName").value = "";
+  renderHomework();
+}
+
+async function deleteChild() {
+  if (currentChild === null) return;
+  if (!confirm("Supprimer cet enfant et tous ses devoirs ?")) return;
+  const r = await sb.from("children").delete().eq("id", currentChild);
+  if (r.error) { dbError(r.error); return; }
+  children = children.filter(function(x) { return x.id !== currentChild; });
+  homework = homework.filter(function(x) { return x.child_id !== currentChild; });
+  currentChild = null;
+  renderHomework();
+}
+
+async function addHomework() {
+  if (currentChild === null) { alert("Choisis d'abord un enfant."); return; }
+  const subject = document.getElementById("hSubject").value.trim();
+  const title = document.getElementById("hTitle").value.trim();
+  if (subject === "" || title === "") { alert("Écris la matière et le devoir."); return; }
+  const row = { child_id: currentChild, subject: subject, title: title, difficulty: document.getElementById("hDiff").value };
+  const due = document.getElementById("hDue").value;
+  if (due) row.due_date = due;
+  const r = await sb.from("homework").insert(row).select().single();
+  if (r.error) { dbError(r.error); return; }
+  homework.push(r.data);
+  document.getElementById("hSubject").value = "";
+  document.getElementById("hTitle").value = "";
+  document.getElementById("hDue").value = "";
+  renderHomework();
+}
+
+function helpHomework(h) {
+  alert("Le chat d'aide aux devoirs arrive bientôt. Il sera disponible après la publication de l'application.");
+}
+
+function renderHomework() {
+  if (!childBarEl) return;
+  childBarEl.innerHTML = "";
+  const all = el("button", "chip" + (currentChild === null ? " active" : ""), "Tous");
+  all.type = "button";
+  all.onclick = function() { currentChild = null; renderHomework(); };
+  childBarEl.appendChild(all);
+  children.forEach(function(c) {
+    const b = el("button", "chip" + (currentChild === c.id ? " active" : ""), c.name + " · " + c.grade);
+    b.type = "button";
+    b.onclick = function() { currentChild = c.id; renderHomework(); };
+    childBarEl.appendChild(b);
+  });
+
+  hwFormEl.style.display = currentChild !== null ? "block" : "none";
+  childDelEl.style.display = currentChild !== null ? "inline-block" : "none";
+  hwHintEl.textContent = children.length === 0 ? "Commence par ajouter un enfant." : (currentChild === null ? "Choisis un enfant pour ajouter un devoir." : "");
+
+  hwListEl.innerHTML = "";
+  const byId = {};
+  children.forEach(function(c) { byId[c.id] = c; });
+  const items = homework.filter(function(h) { return currentChild === null || h.child_id === currentChild; });
+  items.sort(function(a, b) {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    const ra = byId[a.child_id] ? byId[a.child_id].grade_rank : 0;
+    const rb = byId[b.child_id] ? byId[b.child_id].grade_rank : 0;
+    if (ra !== rb) return ra - rb;
+    const dd = (DIFFS[a.difficulty] || 2) - (DIFFS[b.difficulty] || 2);
+    if (dd !== 0) return dd;
+    const da = a.due_date || "9999-99-99";
+    const db = b.due_date || "9999-99-99";
+    return da < db ? -1 : (da > db ? 1 : 0);
+  });
+
+  if (items.length === 0 && children.length > 0) {
+    hwListEl.appendChild(el("div", "empty", "Aucun devoir pour le moment."));
+  }
+
+  items.forEach(function(h) {
+    const kid = byId[h.child_id];
+    const div = el("div", "task" + (h.done ? " done" : ""));
+
+    const check = document.createElement("input");
+    check.type = "checkbox";
+    check.checked = h.done;
+    check.onchange = async function() {
+      const r = await sb.from("homework").update({ done: check.checked }).eq("id", h.id);
+      if (r.error) { dbError(r.error); check.checked = h.done; return; }
+      h.done = check.checked;
+      renderHomework();
+    };
+
+    const body = el("div", "t-body");
+    body.appendChild(el("div", "t-title", h.title));
+    const meta = el("div", "t-meta");
+    if (kid) meta.appendChild(el("small", "tag", kid.name + " · " + kid.grade));
+    meta.appendChild(el("small", "tag", h.subject));
+    meta.appendChild(el("small", "tag " + h.difficulty, h.difficulty.charAt(0).toUpperCase() + h.difficulty.slice(1)));
+    const dt = dueTag(h.due_date, h.done);
+    if (dt) meta.appendChild(dt);
+    body.appendChild(meta);
+    const help = el("button", "chip hw-help", "Demander de l'aide");
+    help.type = "button";
+    help.onclick = function() { helpHomework(h); };
+    body.appendChild(help);
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "icon-btn delete";
+    delBtn.setAttribute("aria-label", "Supprimer");
+    delBtn.innerHTML = ICON_TRASH;
+    delBtn.onclick = async function() {
+      const r = await sb.from("homework").delete().eq("id", h.id);
+      if (r.error) { dbError(r.error); return; }
+      homework = homework.filter(function(x) { return x.id !== h.id; });
+      renderHomework();
+    };
+
+    div.appendChild(check);
+    div.appendChild(body);
+    div.appendChild(delBtn);
+    hwListEl.appendChild(div);
+  });
+}
+
+const loadAllBase = loadAll;
+loadAll = async function(allowMigrate) {
+  await loadAllBase(allowMigrate);
+  loadHomeworkData();
+};
+
+sb.auth.onAuthStateChange(function(event, session) {
+  if (!session) {
+    children = [];
+    homework = [];
+    currentChild = null;
+    renderHomework();
+  }
+});
+
+buildAdvancedUI();
+</script>
+</body>
+</html>
